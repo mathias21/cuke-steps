@@ -16,6 +16,9 @@ opts = OptionParser.new do |opts|
   opts.on("-o", "--output FILE", "Output to FILE") do |file|
     options[:file] = file
   end
+  opts.on("-s", "--sorting STEP_TYPE|CATEGORIES", "SORTING") do |sort|
+    options[:sort] = sort
+  end
   opts.on("-f", "--format FMT", "Select output format: cf, html") do |format|
     options[:format] = format
   end
@@ -54,8 +57,11 @@ end
 puts "Writing output to file '#{options[:file]}'"
 
 
-# Sort primarily by step type, secondarily by step definition
-sorter = lambda do |a,b|
+# Setup output
+case options[:sort]
+when 'STEP_TYPE'
+  # Sort primarily by step type, secondarily by step definition
+  sorter = lambda do |a,b|
   if a[:type] == b[:type]
     a[:name].downcase <=> b[:name].downcase
   else
@@ -65,6 +71,16 @@ sorter = lambda do |a,b|
     wa <=> wb
   end
 end
+when 'CATEGORIES'
+  sorter = lambda do |a,b|
+    return 0
+  end
+else
+  puts "Unknown output format: #{options[:sort]}"
+  exit 1
+end
+puts "Setting sorting to '#{options[:sort]}'"
+
 
 
 # Read files and output
@@ -81,14 +97,22 @@ dirs.each do |dir|
 
   output.start_directory(dir)
   steps.sort!(&sorter)
-  steps.each { |s| output.step(s) }
+  if(options[:sort] == 'CATEGORIES')
+    steps.each { |s| output.step_categories(s) }
+  else
+    steps.each { |s| output.step(s) }
+  end
   output.end_directory
 end
 
 if dirs.size > 1
   output.start_all
   all_steps.sort!(&sorter)
-  all_steps.each { |s| output.step(s) }
+  if(options[:sort] == 'CATEGORIES')
+    steps.each { |s| output.step_categories(s) }
+  else
+    steps.each { |s| output.step(s) }
+  end
   output.end_all
 end
 

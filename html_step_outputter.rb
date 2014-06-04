@@ -9,6 +9,7 @@ class HtmlStepOutputter
   def initialize(file)
     @file = File.open(file, 'w')
     @previous_type = ""
+    @previous_file = ""
     @id_number = 0
   end
   
@@ -108,6 +109,33 @@ class HtmlStepOutputter
     @file.puts %(  </div>)
     @file.puts %(</li>)
   end
+
+  def step_categories(step)
+    if @previous_file != step[:filename]
+      list = step[:filename].split("/")      
+      #puts "file: "+step[:filename]
+      @file.puts %(</ul>) if @previous_file != ""
+      @file.puts %(<h3>#{list[list.length-1]}</h3>)
+      @file.puts %(<ul class="stepdefs">)
+      @previous_file = step[:filename]
+    end
+
+    id = new_id
+    @file.puts %(<li>)
+    @file.puts %(  <a href="#" onclick="$('##{id}').slideToggle(); return false;" class="stepdef">#{CGI.escapeHTML(step[:name])}</a>)
+    @file.puts %(  <div id="#{id}" class="extrainfo">)
+    # TODO: Add link to source repo or Jenkins workspace
+    # <p><a href=".../#{CGI.escapeHTML(step[:filename])}" style="color: #888;">#{CGI.escapeHTML(step[:filename])}:#{step[:line_number]}</a></p>
+    @file.puts %(    <p style="color: #888;">#{CGI.escapeHTML(step[:filename])}:#{step[:line_number]}</p>)
+    @file.puts %(      <pre style="background-color: #ddd; padding-top: 1.2em;">)
+    step[:code].each do |line|
+      @file.puts %(   #{CGI.escapeHTML(line)})
+    end
+    @file.puts %(      </pre>)
+    @file.puts %(  </div>)
+    @file.puts %(</li>)
+  end
+
   
   private
   
