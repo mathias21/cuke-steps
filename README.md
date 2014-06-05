@@ -27,6 +27,9 @@ Supported options:
 *  -o FILE, --output FILE  
    Output to FILE, default "steps.html" or "steps.cf"
 
+*  -s SORTING, --sorting STEP_TYPE|CATEGORIES  
+   Set the sorting type for the steps. Use only with HTML format.
+
 *  -h, --help  
    Usage instructions
 
